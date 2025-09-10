@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A project showcasing the automatic alignment and color composition of Sergei Prokudin-Gorskii's early color photographs using image processing techniques.">
+    <title>Project 1: Colorizing the Prokudin-Gorskii Photo Collection</title>
+<style>
+/* --- General & Body Styles --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* --- Layout & Container --- */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+section {
+    margin-bottom: 30px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #eee;
+    margin: 50px 0;
+}
+
+/* --- Typography --- */
+header {
+    text-align: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #2c3e50;
+}
+
+h2 {
+    color: #34495e;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-top: 40px;
+}
+
+h3 {
+    color: #333;
+    margin-bottom: 5px;
+}
+
+code {
+    background-color: #eee;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- Component: Results Gallery & Cards --- */
+.results-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    text-align: center;
+}
+
+.result-card {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    margin: 0; /* Reset default figure margin */
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+}
+
+.result-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.result-card .info {
+    background-color: #eef;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- Component: Bells & Whistles Section --- */
+.feature-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.feature-list li {
+    background: #eef;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 5px solid #4a90e2;
+}
+
+.feature-list strong {
+    color: #2c3e50;
+    display: block;
+    font-size: 1.1em;
+}
+
+.comparison-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Space between comparison sets */
+}
+
+.comparison-set h3 {
+    text-align: center;
+    font-size: 1.5em;
+    color: #34495e;
+}
+
+.comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: start;
+    text-align: center;
+}
+
+.comparison-item {
+    margin: 0; /* Reset default figure margin */
+}
+
+.comparison-item img {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.comparison-item figcaption {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 5px;
+    color: #555;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Project 1: Colorizing the Prokudin-Gorskii Photo Collection</h1>
+        <p><strong>Author:</strong> Qixiang HUA | 3041994959 | capper.hua@berkeley.edu</p>
+    </header>
+
+    <section id="approach">
+        <h2>Approach</h2>
+        <p>
+            My approach automatically selects an optimal strategy based on image resolution to balance effectiveness and efficiency.
+        </p>
+        <h3>1. Single-Scale Alignment</h3>
+        <p>
+            For low-resolution images (under 500px wide), a direct exhaustive search is used. The algorithm aligns the green and red channels to the blue channel by searching for the best (y, x) displacement within a <code>[-15, 15]</code> pixel window. To prevent interference from noisy plate borders, a 15% margin is ignored during similarity calculation. The best alignment is determined by minimizing the <strong>Sum of Squared Differences (SSD)</strong>.
+        </p>
+        <h3>2. Multi-Scale Pyramid Alignment</h3>
+        <p>
+            For high-resolution <code>.tif</code> images, an exhaustive search is too slow. I implemented a "coarse-to-fine" pyramid alignment. This method first extracts edge features using a Sobel filter, which are robust to lighting variations. The images are then recursively downscaled to build an image pyramid. Alignment begins at the smallest scale to find a coarse displacement, which is then refined at each subsequent, larger-scale level. This significantly improves both the speed and accuracy of the alignment.
+        </p>
+    </section>
+
+    <hr>
+
+    <section id="results">
+        <h2>Results</h2>
+        <p>Below are the results of my algorithm on the provided images. Each image is captioned with the calculated displacement (dy, dx) for the Green (G) and Red (R) channels relative to the Blue (B) channel.</p>
+        
+        <div class="results-gallery">
+            
+            <figure class="result-card">
+                <img src="output/cathedral_processed.jpg" alt="Processed Cathedral Image">
+                <figcaption>
+                    <h3>cathedral.jpg</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(5, 2)</code></p>
+                        <p>R Disp: <code>(12, 3)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/church_processed.jpg" alt="Processed Church Image">
+                <figcaption>
+                    <h3>church.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(25, 4)</code></p>
+                        <p>R Disp: <code>(58, -4)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/emir_processed.jpg" alt="Processed Emir Image">
+                <figcaption>
+                    <h3>emir.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(49, 24)</code></p>
+                        <p>R Disp: <code>(107, 40)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/harvesters_processed.jpg" alt="Processed Harvesters Image">
+                <figcaption>
+                    <h3>harvesters.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(60, 17)</code></p>
+                        <p>R Disp: <code>(124, 14)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+            
+            <figure class="result-card">
+                <img src="output/icon_processed.jpg" alt="Processed Icon Image">
+                <figcaption>
+                    <h3>icon.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(42, 17)</code></p>
+                        <p>R Disp: <code>(90, 23)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+             <figure class="result-card">
+                <img src="output/italil_processed.jpg" alt="Processed Italil Image">
+                <figcaption>
+                    <h3>italil.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(38, 22)</code></p>
+                        <p>R Disp: <code>(77, 36)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/lastochikino_processed.jpg" alt="Processed Lastochikino Image">
+                <figcaption>
+                    <h3>lastochikino.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(-3, -2)</code></p>
+                        <p>R Disp: <code>(76, -8)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/lugano_processed.jpg" alt="Processed Lugano Image">
+                <figcaption>
+                    <h3>lugano.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(41, -17)</code></p>
+                        <p>R Disp: <code>(92, -29)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/melons_processed.jpg" alt="Processed Melons Image">
+                <figcaption>
+                    <h3>melons.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(80, 10)</code></p>
+                        <p>R Disp: <code>(177, 13)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/monastery_processed.jpg" alt="Processed Monastery Image">
+                <figcaption>
+                    <h3>monastery.jpg</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(-3, 2)</code></p>
+                        <p>R Disp: <code>(3, 2)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/self_portrait_processed.jpg" alt="Processed Self Portrait Image">
+                <figcaption>
+                    <h3>self_portrait.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(78, 29)</code></p>
+                        <p>R Disp: <code>(176, 37)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+           
+            <figure class="result-card">
+                <img src="output/siren_processed.jpg" alt="Processed Siren Image">
+                <figcaption>
+                    <h3>siren.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(49, -6)</code></p>
+                        <p>R Disp: <code>(96, -24)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/three_generations_processed.jpg" alt="Processed Three Generations Image">
+                <figcaption>
+                    <h3>three_generations.tif</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(54, 12)</code></p>
+                        <p>R Disp: <code>(111, 9)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/tobolsk_processed.jpg" alt="Processed Tobolsk Image">
+                <figcaption>
+                    <h3>tobolsk.jpg</h3>
+                    <div class="info">
+                        <p>G Disp: <code>(3, 3)</code></p>
+                        <p>R Disp: <code>(6, 3)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>
+            This project successfully demonstrates how image processing can automatically align and composite Prokudin-Gorskii's historic color photographs. The image pyramid approach with edge detection proved both efficient and accurate for high-resolution files. The final images showcase natural colors and clear details, bringing moments from a century ago back to life.
+        </p>
+    </section>
+
+    <hr>
+
+    <section id="personal-choice">
+        <h2>Personal Choice</h2>
+        <p>I selected a few additional images from the Prokudin-Gorskii collection to test the generalizability of my algorithm.</p>
+        
+        <div class="results-gallery">
+            <figure class="result-card">
+                <img src="output/1_processed.jpg" alt="">
+                <figcaption>
+                    <h3></h3>
+                    <div class="info">
+                        <p>G Disp: <code>(49, 0)</code></p>
+                        <p>R Disp: <code>(124, -12)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/2_processed.jpg" alt="">
+                <figcaption>
+                    <h3></h3>
+                    <div class="info">
+                        <p>G Disp: <code>(25, -18)</code></p>
+                        <p>R Disp: <code>(116, -38)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+
+            <figure class="result-card">
+                <img src="output/3_processed.jpg" alt="">
+                <figcaption>
+                    <h3></h3>
+                    <div class="info">
+                        <p>G Disp: <code>(48, 38)</code></p>
+                        <p>R Disp: <code>(107, 56)</code></p>
+                    </div>
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <hr>
+
+    <section id="bells-and-whistles">
+        <h2>Bells &amp; Whistles</h2>
+        <p>
+            To further improve image quality, I implemented several automatic post-alignment enhancements to correct color, improve contrast, and remove border artifacts.
+        </p>
+        <ul class="feature-list">
+            <li>
+                <strong>Cropping:</strong>
+                Using the calculated displacement vectors, I determine the maximum rectangular area where all three channels perfectly overlap. 
+            <li>
+                <strong>Auto White Balance:</strong>
+                To correct the color cast common in the original photos, I implemented a method that assumes the average color of a scene is neutral gray and scales each channel's mean value to a global average, effectively neutralizing color tints.
+            </li>
+            <li>
+                <strong>Auto Contrast:</strong>
+                To make images more vibrant, I implemented contrast stretching. This function finds the 2nd and 98th percentiles of the luminance distribution and stretches this range to the full [0, 1] interval. This avoids distortion from extreme outliers and produces a more natural-looking result.
+            </li>
+        </ul>
+
+        <h3>Results</h3>
+        <div class="comparison-gallery">
+            <div class="comparison-set">
+                <h3>church.tif</h3>
+                <div class="comparison-container">
+                    <figure class="comparison-item">
+                        <img src="output/church_processed.jpg" alt="Church before enhancements">
+                        <figcaption>Before (Aligned Only)</figcaption>
+                    </figure>
+                    <figure class="comparison-item">
+                        <img src="output/church_enhanced.jpg" alt="Church after enhancements">
+                        <figcaption>After (Enhanced)</figcaption>
+                    </figure>
+                </div>
+            </div>
+
+            <div class="comparison-set">
+                <h3>icon.tif</h3>
+                <div class="comparison-container">
+                    <figure class="comparison-item">
+                        <img src="output/icon_processed.jpg" alt="Icon before enhancements">
+                        <figcaption>Before (Aligned Only)</figcaption>
+                    </figure>
+                    <figure class="comparison-item">
+                        <img src="output/icon_enhanced.jpg" alt="Icon after enhancements">
+                        <figcaption>After (Enhanced)</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+</body>
+</html>
