@@ -161,7 +161,70 @@ code {
     margin-top: 5px;
     color: #555;
 }
+/* --- Add this entire block at the end of your styles --- */
+@media print {
+    body {
+        /* Use points (pt) for fonts in print for better results */
+        font-size: 10pt; 
+        /* Remove background colors to save ink and improve readability */
+        background-color: #fff;
+        color: #000;
+    }
+
+    /* Simplify the main container for paper */
+    .container {
+        max-width: 100%; /* Use the full paper width */
+        box-shadow: none; /* Remove shadows */
+        border: none;
+    }
+
+    /* Prevent unnecessary page breaks */
+    header, figure, section {
+        page-break-inside: avoid;
+    }
+
+    /* Force grids into a simple, predictable layout */
+    .results-gallery, .comparison-container {
+        /* Display as a simple block, stacking items vertically */
+        display: block; 
+    }
+
+    .result-card, .comparison-item {
+        /* Add space between items that are now stacked */
+        margin-bottom: 20px; 
+        border: 1px solid #ccc;
+        /* Remove hover effects that don't apply to print */
+        transform: none; 
+    }
+    
+    /* Control image size directly */
+    img {
+        /* Make images smaller so they don't dominate the page */
+        max-width: 70% !important; 
+        /* Center the smaller images */
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Hide decorative elements that are irrelevant on paper */
+    .feature-list li {
+        background: none;
+        border: 1px solid #ddd;
+    }
+}
 </style>
+
+<style>
+/* --- Your existing CSS rules --- */
+
+/* --- ADD THIS AT THE END --- */
+@media print {
+    /* Rules here only apply when printing */
+}
+</style>
+
+
 </head>
 <body>
 
